@@ -3,6 +3,51 @@ const bcrypt = require("bcrypt");
 const crypto = require('crypto');
 const HttpError = require("../models/http-Error");
 
+async function signup_mobile(req,res,next){
+    //This function will take the email and deviceId to sign up the user
+    
+    let {email} = req.userData;
+    const {deviceId} = req.body;
+    let userExists = false;
+    try{
+        userExists = await User.findOne({email:email})
+    }catch(err){
+        console.error("WHILE FINDING EXISTING USERS IN DB",err);
+        return next(new HttpError(`Can't find existing users. Plase try again`,500))
+    }
+    if(userExists){
+        
+        try{
+            await User.updateOne({email},{deviceId})
+        }catch(err){
+            userExists = false;
+        }
+        res.json({
+            message:"Successfully added deviceId",
+            data:userExists
+        })
+        return;
+    }
+    // if reaches here then the user doesn't exists
+    const clientId = crypto.randomBytes(32).toString('hex');
+    let clientPassword = crypto.randomBytes(32).toString('hex');
+    userExists = new User({
+        email,
+        clientId,
+        clientSecret:clientPassword,
+        deviceId
+    })
+    try{
+        await userExists.save()
+    }catch(err){
+        console.error("WHILE TRYING TO SAVE THE NEW USER ",email,err)
+        return next(new HttpError(`Something went wrong. Try again`,500))
+    }
+    res.json({
+        message:'Successfully created new user',
+        data:userExists
+    })   
+}
 
 async function signup(req,res,next){
     //This function will take the email and deviceId to sign up the user
@@ -101,3 +146,4 @@ async function regenerateToken(req,res,next){
 exports.signup = signup
 exports.deleteToken = deleteToken
 exports.regenerateToken = regenerateToken;
+exports.signup_mobile = signup_mobile
