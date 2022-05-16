@@ -4,22 +4,22 @@ const crypto = require('crypto');
 const HttpError = require("../models/http-Error");
 const {firebaseApp} = require("../index");
 
-async function signup(req,res,next){
-    //This function will take the email and deviceId to sign up the user
-    const {idToken} = req.body;
-    // idToken is going to be firebase user id Token
+async function isAuthenticatedUser(idToken){
     let firebaseUser = false;
     try{
         firebaseUser =  await firebaseApp.auth().verifyIdToken(idToken);
     }catch(err){
         console.error("WHILE TRYING TO VERIFY THE FIREBASE ID TOKEN",err);
-        return next(new HttpError(`Can't verify the firebase id token. Simply try again`,500));
+        return false;
     }
-    console.log(firebaseUser)
-    if(!firebaseUser){
-        return next(new HttpError(`Provided token is not a valid firebase id token`,400))
-    }
-    let email = firebaseUser.email;
+    return firebaseUser;
+}
+
+
+async function signup(req,res,next){
+    //This function will take the email and deviceId to sign up the user
+    
+    let {email} = req.userData;
     let userExists = false;
     try{
         userExists = await User.findOne({email:email})
@@ -55,7 +55,7 @@ async function signup(req,res,next){
 }
 
 async function deleteToken(req,res,next){
-    const {email} = req.body;
+    const {email} = req.userData;
     let userExists = false;
     try{
         userExists = await User.findOne({email:email})
@@ -81,7 +81,7 @@ async function deleteToken(req,res,next){
 }
 
 async function regenerateToken(req,res,next){
-    let {email} = req.body;
+    let {email} = req.userData;
     let userExists = false;
     try{
         userExists = await User.findOne({email:email})
