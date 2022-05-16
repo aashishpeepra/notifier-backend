@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 
 dotenv.config();
 
-const firebaseCreds = require("./firebase.json");
+const firebaseCreds = require("./configOpener");
 
 firebaseAdmin.initializeApp({
     credential:firebaseAdmin.credential.cert(firebaseCreds)

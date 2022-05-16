@@ -4,6 +4,9 @@
 
 const Router = require("express").Router();
 const {createEvent}  =require("../controllers/event");
+const firebaseAuthMiddleware = require("../middleware/firebaseAuth");
+
+Router.use(firebaseAuthMiddleware)
 
 Router.post("/create/:clientid",createEvent)
 
