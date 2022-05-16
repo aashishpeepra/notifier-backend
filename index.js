@@ -12,7 +12,10 @@ const firebaseCreds = require("./firebase.json");
 firebaseAdmin.initializeApp({
     credential:firebaseAdmin.credential.cert(firebaseCreds)
 })
+const firebaseApp = firebaseAdmin.app();
 
+exports.firebaseAdmin = firebaseAdmin;
+exports.firebaseApp = firebaseApp;
 
 const server = express();
 server.use(cors());

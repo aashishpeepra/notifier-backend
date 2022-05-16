@@ -3,7 +3,7 @@ const User = require("../models/user");
 const HttpError = require("../models/http-Error");
 const bcrypt = require("bcrypt");
 const { default: mongoose } = require("mongoose");
-const firebaseAdmin = require("firebase-admin");
+
 
 async function createEvent(req, res, next) {
   // it will accept the event details along with clientPassword

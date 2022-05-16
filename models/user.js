@@ -10,6 +10,9 @@ const User = new Schema(
       required: true,
       unique: true,
     },
+    name:{
+      type:String
+    },
     deviceId: {
       type: String,
     },
