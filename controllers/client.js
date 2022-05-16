@@ -58,7 +58,7 @@ async function deleteToken(req,res,next){
     // email exists and now have to disable the tokens
    
     try{
-        await userExists.updateOne({email},{clientId:"",clientPassword:""})
+        await userExists.updateOne({email},{clientId:"",clientSecret:""})
     }catch(err){
         console.error("WHILE TRYING TO SAVE HTE USER ",email,err)
         return next(new HttpError(`Something went wrong. Try again`,500))
@@ -87,7 +87,7 @@ async function regenerateToken(req,res,next){
     
     
     try{
-        await User.updateOne({email},{clientId,clientPassword:clientPassword})
+        await User.updateOne({email},{clientId,clientSecret:clientPassword})
     }catch(err){
         console.error("WHILE TRYING TO SAVE THE NEW USER ",email,err)
         return next(new HttpError(`Something went wrong. Try again`,500))
