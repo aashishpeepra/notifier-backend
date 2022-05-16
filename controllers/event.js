@@ -3,11 +3,12 @@ const User = require("../models/user");
 const HttpError = require("../models/http-Error");
 const bcrypt = require("bcrypt");
 const { default: mongoose } = require("mongoose");
-
+const firebaseAdmin = require("firebase-admin")
 
 async function createEvent(req, res, next) {
   // it will accept the event details along with clientPassword
   let { clientid } = req.params;
+  const {email} = req.userData;
   let userExists = false;
   try {
     userExists = await User.findOne({ clientId: clientid });
@@ -21,12 +22,19 @@ async function createEvent(req, res, next) {
     console.info(email, `USER DOESN'T EXISTS`);
     return next(new HttpError(`${email} doesn't exists in the database`, 403));
   }
+  
+  //checking if the user is authorized to add changes to events
+  if(userExists.email != email){
+    return next(new HttpError('You are not authorized to make changes in this client id',400));
+  }
+  
   // clientId is correct
   if (req.body.clientSecret != userExists.clientSecret) {
     return next(
       new HttpError("The clientId or clientSecret is incorrect", 400)
     );
   }
+
 
   //reaches here means everything is great. Now create new Event
   const event = new Event({
