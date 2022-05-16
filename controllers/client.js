@@ -2,10 +2,24 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const crypto = require('crypto');
 const HttpError = require("../models/http-Error");
+const {firebaseApp} = require("../index");
 
 async function signup(req,res,next){
     //This function will take the email and deviceId to sign up the user
-    const {email,deviceId} = req.body;
+    const {idToken} = req.body;
+    // idToken is going to be firebase user id Token
+    let firebaseUser = false;
+    try{
+        firebaseUser =  await firebaseApp.auth().verifyIdToken(idToken);
+    }catch(err){
+        console.error("WHILE TRYING TO VERIFY THE FIREBASE ID TOKEN",err);
+        return next(new HttpError(`Can't verify the firebase id token. Simply try again`,500));
+    }
+    console.log(firebaseUser)
+    if(!firebaseUser){
+        return next(new HttpError(`Provided token is not a valid firebase id token`,400))
+    }
+    let email = firebaseUser.email;
     let userExists = false;
     try{
         userExists = await User.findOne({email:email})
@@ -14,8 +28,11 @@ async function signup(req,res,next){
         return next(new HttpError(`Can't find existing users. Plase try again`,500))
     }
     if(userExists){
-        console.info(email,'TRIED TO SIGN UP WHILE BEING AN EXISTING USER');
-        return next(new HttpError(`${email} is an existing user. Maybe you want to sign in instead.`,403))
+        res.json({
+            message:"Successfully logged in user",
+            data:userExists
+        })
+        return;
     }
     // if reaches here then the user doesn't exists
     const clientId = crypto.randomBytes(32).toString('hex');
@@ -23,8 +40,7 @@ async function signup(req,res,next){
     userExists = new User({
         email,
         clientId,
-        clientSecret:clientPassword,
-        deviceId
+        clientSecret:clientPassword
     })
     try{
         await userExists.save()
