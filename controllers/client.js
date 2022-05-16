@@ -2,18 +2,6 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const crypto = require('crypto');
 const HttpError = require("../models/http-Error");
-const {firebaseApp} = require("../index");
-
-async function isAuthenticatedUser(idToken){
-    let firebaseUser = false;
-    try{
-        firebaseUser =  await firebaseApp.auth().verifyIdToken(idToken);
-    }catch(err){
-        console.error("WHILE TRYING TO VERIFY THE FIREBASE ID TOKEN",err);
-        return false;
-    }
-    return firebaseUser;
-}
 
 
 async function signup(req,res,next){
